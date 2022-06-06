@@ -34,11 +34,12 @@ void Renderer::renderScene()
 				pixelColor += rayColor(ray, maxDepth);
 			}
 			pixelColor /= samples;
+			pixelColor = glm::sqrt(pixelColor);
 
 			int pixelIndex = 3 * (i * width + j);
-			buffer[pixelIndex] = (int)pixelColor.x; // r
-			buffer[pixelIndex + 1] = (int)pixelColor.y; // g
-			buffer[pixelIndex + 2] = (int)pixelColor.z; // b
+			buffer[pixelIndex] = (uint8_t)(254.999 * pixelColor.x); // r
+			buffer[pixelIndex + 1] = (uint8_t)(254.999 * pixelColor.y); // g
+			buffer[pixelIndex + 2] = (uint8_t)(254.999 * pixelColor.z); // b
 		}
 	}
 }
@@ -78,5 +79,5 @@ glm::vec3 Renderer::rayColor(const Ray& r, int depth)
 	}
 
 	float t = 0.5 * (r.d().y + 1.0f);
-	return (1.0f - t) * glm::vec3(255, 255, 255) + t * glm::vec3(0.5 * 255, 0.7 * 255, 1.0 * 255);
+	return (1.0f - t) * glm::vec3(1, 1, 1) + t * glm::vec3(0.5, 0.7, 1.0);
 }
