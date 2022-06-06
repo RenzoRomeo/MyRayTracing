@@ -21,3 +21,9 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm:
 	vertical = u * (float)viewportH;
 	bottomLeft = position + w * focalDistance - vertical / 2.0f - horizontal / 2.0f;
 }
+
+Ray Camera::getRay(float r, float s) const
+{
+	glm::vec3 dir = bottomLeft + horizontal * r + vertical * s - position;
+	return Ray(position, dir);
+}

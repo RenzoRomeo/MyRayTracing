@@ -2,9 +2,11 @@
 
 #include <glm/glm.hpp>
 
+#include "Ray.h"
+
 struct Camera
 {
-public:
+private:
 	glm::vec3 position;
 	glm::vec3 direction;
 	glm::vec3 up;
@@ -19,4 +21,6 @@ public:
 
 public:
 	Camera(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up, float focalDistance, float fov);
+
+	Ray getRay(float r, float s) const;
 };

@@ -16,11 +16,14 @@ private:
 	int bufferSize;
 	uint8_t *buffer;
 	Camera camera;
+	Scene scene;
 
 public:
-	Renderer(int width, int height, const Camera& camera);
+	Renderer(int width, int height, const Camera& camera, const Scene& scene);
 	~Renderer();
 
-	void renderScene(const Scene& scene) const;
+	glm::vec3 rayColor(const Ray& r, int depth);
+
+	void renderScene();
 	void saveImage(const std::string& filepath) const;
 };

@@ -15,5 +15,5 @@ public:
 	void add(Hittable* object);
 	void clear();
 
-	bool hit(const Ray& r, HitRecord& hr) const override;
+	bool hit(const Ray& r, HitRecord& hr, float tMin, float tMax) const override;
 };

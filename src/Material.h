@@ -2,13 +2,21 @@
 
 #include <glm/glm.hpp>
 
+#include "Hittable.h"
+
 class Material
 {
-private:
+public:
+	virtual bool scatter(const Ray& rIn, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const = 0;
+};
+
+class Opaque : public Material
+{
+public:
 	glm::vec3 color;
 
 public:
-	Material(const glm::vec3& color);
+	Opaque(const glm::vec3& color);
 
-	glm::vec3 getColor() const { return color; }
+	virtual bool scatter(const Ray& rIn, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const override;
 };

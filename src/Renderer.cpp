@@ -1,9 +1,10 @@
 #include <fstream>
 
 #include "Renderer.h"
+#include "Material.h"
 
-Renderer::Renderer(int width, int height, const Camera& camera)
-	:width(width), height(height), camera(camera)
+Renderer::Renderer(int width, int height, const Camera& camera, const Scene& scene)
+	:width(width), height(height), camera(camera), scene(scene)
 {
 	bufferSize = 3 * width * height;
 	buffer = new uint8_t[bufferSize];
@@ -14,24 +15,18 @@ Renderer::~Renderer()
 	delete[] buffer;
 }
 
-void Renderer::renderScene(const Scene& scene) const
+void Renderer::renderScene()
 {
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 0; j < width; j++)
 		{
-			glm::vec3 dir = camera.bottomLeft + camera.horizontal * ((float)j / (float)(width - 1))
-				+ camera.vertical * ((float)i / (float)(height - 1)) - camera.position;
+			float r = (float)j / (float)(width - 1);
+			float s = (float)i / (float)(height - 1);
 
-			Ray r(camera.position, dir);
+			Ray ray = camera.getRay(r, s);
 
-			HitRecord hr;
-			hr.hitColor = { 0,0,0 };
-			hr.minT = INFINITY;
-
-			scene.hit(r, hr);
-
-			glm::vec3 color = hr.hitColor;
+			glm::vec3 color = rayColor(ray, 5);
 
 			int pixelIndex = 3 * (i * width + j);
 			buffer[pixelIndex] = (int)color.x; // r
@@ -56,4 +51,25 @@ void Renderer::saveImage(const std::string& filepath) const
 			file << r << " " << g << " " << b << '\n';
 		}
 	}
+}
+
+glm::vec3 Renderer::rayColor(const Ray& r, int depth)
+{
+	HitRecord hr;
+
+	if (depth <= 0)
+		return { 0,0,0 };
+
+	if (scene.hit(r, hr, 0.001, INFINITY))
+	{
+		Ray scattered;
+		glm::vec3 attenuation;
+		if (hr.material->scatter(r, hr, attenuation, scattered))
+		{
+			return attenuation * rayColor(scattered, depth - 1);
+		}
+	}
+
+	float t = 0.5 * (r.d().y + 1.0f);
+	return (1.0f - t) * glm::vec3(255, 255, 255) + t * glm::vec3(0.5 * 255, 0.7 * 255, 1.0 * 255);
 }

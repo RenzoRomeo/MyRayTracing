@@ -14,11 +14,20 @@ void Scene::clear()
 	objects.clear();
 }
 
-bool Scene::hit(const Ray& r, HitRecord& hr) const
+bool Scene::hit(const Ray& r, HitRecord& hr, float tMin, float tMax) const
 {
-	for (auto object : objects)
+	HitRecord tempRec;
+	bool hitAnything = false;
+
+	for (const auto& object : objects)
 	{
-		object->hit(r, hr);
+		if (object->hit(r, tempRec, tMin, tMax))
+		{
+			hr = tempRec;
+			tMax = tempRec.t;
+			hitAnything = true;
+		}
+			
 	}
-	return true;
+	return hitAnything;
 }

@@ -2,16 +2,18 @@
 
 #include "Ray.h"
 
+class Material;
+
 struct HitRecord
 {
 	glm::vec3 hitPoint;
 	glm::vec3 hitNormal;
-	glm::vec3 hitColor;
-	float minT;
+	Material* material = nullptr;
+	float t;
 };
 
 class Hittable
 {
 public:
-	virtual bool hit(const Ray& r, HitRecord& hr) const = 0;
+	virtual bool hit(const Ray& r, HitRecord& hr, float tMin, float tMax) const = 0;
 };
