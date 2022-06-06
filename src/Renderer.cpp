@@ -1,11 +1,12 @@
 #include <fstream>
 #include <iostream>
+#include <chrono>
 
 #include "Renderer.h"
 #include "Material.h"
 
-Renderer::Renderer(int width, int height, const Camera& camera, const Scene& scene, int samples, int maxDepth)
-	:width(width), height(height), camera(camera), scene(scene), samples(samples), maxDepth(maxDepth)
+Renderer::Renderer(int width, int height, const Camera& camera, const Scene& scene, int samples, int maxDepth, int threads)
+	:width(width), height(height), camera(camera), scene(scene), samples(samples), maxDepth(maxDepth), nThreads(threads)
 {
 	bufferSize = 3 * width * height;
 	buffer = new uint8_t[bufferSize];
@@ -18,29 +19,64 @@ Renderer::~Renderer()
 
 void Renderer::renderScene()
 {
-	for (int i = 0; i < height; i++)
+	using std::chrono::high_resolution_clock;
+	using std::chrono::duration_cast;
+	using std::chrono::duration;
+
+	int linesPerThread = ceil(height / nThreads);
+
+	auto t1 = high_resolution_clock::now();
+
+	for (int i = 0; i < nThreads; i++)
 	{
-		std::cout << "\rscanlines left : " << height - i;
-		for (int j = 0; j < width; j++)
+		int beginning = i * linesPerThread;
+		int end = (i + 1)  * linesPerThread;
+
+		if (end > height)
+			end = height;
+
+		threadPool.push_back(std::thread([=] { renderSection(beginning, end); }));
+	}
+
+	for (auto& thread : threadPool)
+		if (thread.joinable())
+			thread.join();
+
+	auto t2 = high_resolution_clock::now();
+	duration<double, std::milli> msDouble = t2 - t1;
+
+	std::cout << "\nDone [" << msDouble.count() / 1000.0 << " s]\n";
+}
+
+void Renderer::renderLine(int line)
+{
+	for (int j = 0; j < width; j++)
+	{
+		glm::vec3 pixelColor = { 0,0,0 };
+		for (int samp = 0; samp < samples; samp++)
 		{
-			glm::vec3 pixelColor = { 0,0,0 };
-			for (int samp = 0; samp < samples; samp++)
-			{
-				float r = ((float)j + glm::linearRand<float>(0, 1)) / (float)(width - 1);
-				float s = ((float)i + glm::linearRand<float>(0, 1)) / (float)(height - 1);
+			float r = ((float)j + glm::linearRand<float>(0, 1)) / (float)(width - 1);
+			float s = ((float)line + glm::linearRand<float>(0, 1)) / (float)(height - 1);
 
-				Ray ray = camera.getRay(r, s);
+			Ray ray = camera.getRay(r, s);
 
-				pixelColor += rayColor(ray, maxDepth);
-			}
-			pixelColor /= samples;
-			pixelColor = glm::sqrt(pixelColor);
-
-			int pixelIndex = 3 * (i * width + j);
-			buffer[pixelIndex] = (uint8_t)(254.999 * pixelColor.x); // r
-			buffer[pixelIndex + 1] = (uint8_t)(254.999 * pixelColor.y); // g
-			buffer[pixelIndex + 2] = (uint8_t)(254.999 * pixelColor.z); // b
+			pixelColor += rayColor(ray, maxDepth);
 		}
+		pixelColor /= samples;
+		pixelColor = glm::sqrt(pixelColor);
+
+		int pixelIndex = 3 * (line * width + j);
+		buffer[pixelIndex] = (uint8_t)(254.999 * pixelColor.x); // r
+		buffer[pixelIndex + 1] = (uint8_t)(254.999 * pixelColor.y); // g
+		buffer[pixelIndex + 2] = (uint8_t)(254.999 * pixelColor.z); // b
+	}
+}
+
+void Renderer::renderSection(int beginning, int end)
+{
+	for (int i = beginning; i < end; i++)
+	{
+		renderLine(i);
 	}
 }
 
