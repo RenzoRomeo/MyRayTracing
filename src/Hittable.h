@@ -10,6 +10,13 @@ struct HitRecord
 	glm::vec3 hitNormal;
 	Material* material = nullptr;
 	float t;
+	bool frontFace;
+
+	inline void setNormal(const Ray& r, const glm::vec3& normal)
+	{
+		frontFace = glm::dot(r.d(), normal) < 0;
+		hitNormal = frontFace ? normal : -normal;
+	}
 };
 
 class Hittable

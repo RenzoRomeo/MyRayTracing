@@ -3,7 +3,7 @@
 #include "Material.h"
 
 Opaque::Opaque(const glm::vec3& color)
-	:color(color)
+	: color(color)
 {
 }
 

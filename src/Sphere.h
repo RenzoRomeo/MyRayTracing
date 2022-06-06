@@ -11,7 +11,7 @@ private:
 	Material* material;
 
 public:
-	Sphere(const glm::vec3& center, float radius, const glm::vec3& color, Material *material);
+	Sphere(const glm::vec3& center, float radius, Material *material);
 
 	bool hit(const Ray& r, HitRecord& hr, float tMin, float tMax) const override;
 };

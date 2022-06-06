@@ -18,16 +18,17 @@ bool Scene::hit(const Ray& r, HitRecord& hr, float tMin, float tMax) const
 {
 	HitRecord tempRec;
 	bool hitAnything = false;
+	float closest = tMax;
 
 	for (const auto& object : objects)
 	{
-		if (object->hit(r, tempRec, tMin, tMax))
+		if (object->hit(r, tempRec, tMin, closest))
 		{
 			hr = tempRec;
-			tMax = tempRec.t;
+			closest = tempRec.t;
 			hitAnything = true;
 		}
-			
 	}
+
 	return hitAnything;
 }

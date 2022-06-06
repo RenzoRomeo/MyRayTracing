@@ -1,6 +1,6 @@
 #include "Sphere.h"
 
-Sphere::Sphere(const glm::vec3& center, float radius, const glm::vec3& color, Material* material)
+Sphere::Sphere(const glm::vec3& center, float radius, Material* material)
     : center(center), radius(radius), material(material)
 {
 }
@@ -24,7 +24,7 @@ bool Sphere::hit(const Ray& r, HitRecord& hr, float tMin, float tMax) const
 
     hr.t = t;
     hr.hitPoint = hitPoint;
-    hr.hitNormal = hitNormal;
+    hr.setNormal(r, hitNormal);
     hr.material = material;
 
     return true;

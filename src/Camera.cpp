@@ -6,9 +6,9 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm:
 	this->direction = glm::normalize(direction);
 	this->up = glm::normalize(up);
 
-	w = direction;
-	u = up;
-	v = glm::cross(w, u);
+	w = direction; // y
+	u = up; // z
+	v = glm::cross(w, u); // x
 
 	float aspectRatio = 16.0 / 9.0;
 	float tetha = fov * 3.14159265358f / 180.0f;
@@ -24,6 +24,9 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm:
 
 Ray Camera::getRay(float r, float s) const
 {
+	// glm::vec2 rd = glm::diskRand(1.0f);
+	// glm::vec3 rd3 = { rd.x, rd.y, 0 };
+	// glm::vec3 offset = v * rd.x + u * rd.y;
 	glm::vec3 dir = bottomLeft + horizontal * r + vertical * s - position;
 	return Ray(position, dir);
 }

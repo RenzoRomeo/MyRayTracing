@@ -1,10 +1,11 @@
 #include <fstream>
+#include <iostream>
 
 #include "Renderer.h"
 #include "Material.h"
 
-Renderer::Renderer(int width, int height, const Camera& camera, const Scene& scene)
-	:width(width), height(height), camera(camera), scene(scene)
+Renderer::Renderer(int width, int height, const Camera& camera, const Scene& scene, int samples, int maxDepth)
+	:width(width), height(height), camera(camera), scene(scene), samples(samples), maxDepth(maxDepth)
 {
 	bufferSize = 3 * width * height;
 	buffer = new uint8_t[bufferSize];
@@ -19,19 +20,25 @@ void Renderer::renderScene()
 {
 	for (int i = 0; i < height; i++)
 	{
+		std::cout << "\rscanlines left : " << height - i;
 		for (int j = 0; j < width; j++)
 		{
-			float r = (float)j / (float)(width - 1);
-			float s = (float)i / (float)(height - 1);
+			glm::vec3 pixelColor = { 0,0,0 };
+			for (int samp = 0; samp < samples; samp++)
+			{
+				float r = ((float)j + glm::linearRand<float>(0, 1)) / (float)(width - 1);
+				float s = ((float)i + glm::linearRand<float>(0, 1)) / (float)(height - 1);
 
-			Ray ray = camera.getRay(r, s);
+				Ray ray = camera.getRay(r, s);
 
-			glm::vec3 color = rayColor(ray, 5);
+				pixelColor += rayColor(ray, maxDepth);
+			}
+			pixelColor /= samples;
 
 			int pixelIndex = 3 * (i * width + j);
-			buffer[pixelIndex] = (int)color.x; // r
-			buffer[pixelIndex + 1] = (int)color.y; // g
-			buffer[pixelIndex + 2] = (int)color.z; // b
+			buffer[pixelIndex] = (int)pixelColor.x; // r
+			buffer[pixelIndex + 1] = (int)pixelColor.y; // g
+			buffer[pixelIndex + 2] = (int)pixelColor.z; // b
 		}
 	}
 }
